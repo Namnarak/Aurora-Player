@@ -1,0 +1,40 @@
+#ifndef AURORA_AUDIO_ROBLOX_OUTPUT_DEVICE_BRIDGE_INTERNAL_H_
+#define AURORA_AUDIO_ROBLOX_OUTPUT_DEVICE_BRIDGE_INTERNAL_H_
+
+#include <cstddef>
+#include <cstdint>
+#include <array>
+#include <optional>
+#include <string>
+#include <string_view>
+
+#include "compat/build_profile.h"
+
+namespace aurora::audio::internal {
+
+struct FmodNativeInputCaptureProfile {
+  std::array<std::uintptr_t, 6> capture_method_rvas{};
+  std::uintptr_t sink_vtable_rva = 0;
+  std::uintptr_t deliver_pcm_rva = 0;
+  std::uintptr_t sink_destroy_rva = 0;
+};
+
+std::optional<FmodNativeInputCaptureProfile> FindNativeInputCaptureProfile(
+    const compat::BuildProfile& profile);
+
+bool HasExpectedFmodNativeSinkDestroyContract(const std::uint8_t* code,
+                                               std::size_t size);
+
+bool HasExpectedFmodStringConstructorContract(const std::uint8_t* code,
+                                              std::size_t size);
+
+bool HasExpectedFmodOutputDeviceVtable(
+    const std::uintptr_t* vtable, std::uintptr_t image_base,
+    const compat::FmodOutputDeviceBridgeProfile& profile);
+
+std::string MakeOutputDeviceGuid(std::uint32_t playback_device_id,
+                                 std::string_view name);
+
+}  // namespace aurora::audio::internal
+
+#endif  // AURORA_AUDIO_ROBLOX_OUTPUT_DEVICE_BRIDGE_INTERNAL_H_

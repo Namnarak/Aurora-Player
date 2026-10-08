@@ -1,0 +1,20 @@
+#ifndef AURORA_PLATFORM_SDL_WINDOW_ICON_DATA_H_
+#define AURORA_PLATFORM_SDL_WINDOW_ICON_DATA_H_
+
+#include <cstddef>
+
+namespace aurora {
+namespace platform {
+namespace internal {
+
+inline constexpr unsigned char kAuroraWindowIconPng[] = {
+    @AURORA_WINDOW_ICON_BYTES@
+};
+inline constexpr std::size_t kAuroraWindowIconPngSize =
+    sizeof(kAuroraWindowIconPng);
+
+}  // namespace internal
+}  // namespace platform
+}  // namespace aurora
+
+#endif  // AURORA_PLATFORM_SDL_WINDOW_ICON_DATA_H_

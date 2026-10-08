@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 Aurora Project Authors -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <title>Aurora</title>
+  <defs>
+    <linearGradient id="aurora-base" x1="82" y1="439" x2="434" y2="94" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11E6E0"/>
+      <stop offset=".43" stop-color="#126EFF"/>
+      <stop offset="1" stop-color="#B43CFF"/>
+    </linearGradient>
+    <linearGradient id="aurora-glow" x1="128" y1="414" x2="410" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C7FFFF" stop-opacity=".82"/>
+      <stop offset=".48" stop-color="#5AE7FF" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#FFD3FF" stop-opacity=".9"/>
+    </linearGradient>
+    <filter id="soft-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <mask id="aurora-cutout">
+      <rect width="512" height="512" fill="black"/>
+      <path d="M136 64 451 151 367 453 61 369Z" fill="white"/>
+      <path d="m219 236 73 20-20 73-73-20z" fill="black"/>
+    </mask>
+  </defs>
+  <g mask="url(#aurora-cutout)">
+    <rect width="512" height="512" fill="url(#aurora-base)"/>
+    <g opacity=".68" stroke="url(#aurora-glow)" stroke-linecap="round" fill="none" filter="url(#soft-glow)">
+      <path d="M13 361C100 231 105 454 214 331 314 218 247 124 488 167" stroke-width="10"/>
+      <path d="M7 401C114 271 126 478 235 354 336 239 263 149 495 191" stroke-width="4"/>
+      <path d="M27 316C94 224 123 382 207 278 310 150 341 114 482 125" stroke-width="5"/>
+      <path d="M63 450C145 340 184 476 285 367 383 261 321 187 458 226" stroke-width="3"/>
+      <path d="M77 214C165 92 184 256 283 162 372 76 373 104 445 92" stroke-width="4"/>
+    </g>
+    <g opacity=".25" stroke="#E6F6FF" fill="none">
+      <path d="M103 401C151 281 223 447 314 323 382 230 342 164 443 164"/>
+      <path d="M93 418C151 299 231 461 325 337 394 245 353 177 454 179"/>
+      <path d="M83 434C148 318 240 474 337 351 405 261 366 191 465 194"/>
+      <path d="M111 383C156 262 214 429 303 307 372 212 328 150 429 149"/>
+    </g>
+  </g>
+  <path d="M136 64 451 151 367 453 61 369Z" stroke="#73F7FF" stroke-opacity=".8" stroke-width="3"/>
+  <path d="m219 236 73 20-20 73-73-20z" stroke="#D0FBFF" stroke-opacity=".72" stroke-width="4"/>
+</svg>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Aurora for Linux</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body><main>
+  <img src="../packaging/space.bigrat.aurora.svg" alt="Aurora logo">
+  <h1>Aurora</h1>
+  <p>Play Roblox on Linux. Use the stable Flathub release, or try the latest nightly build from main.</p>
+  <a class="button" href="https://flathub.org/apps/space.bigrat.aurora">Stable on Flathub</a>
+  <a class="button secondary" href="https://aurora.bigrat.space/aurora.flatpakref">Nightly build</a>
+  <div class="commands">
+    <p>Stable</p>
+    <code>flatpak install flathub space.bigrat.aurora</code>
+    <p>Nightly</p>
+    <code>flatpak install --user https://aurora.bigrat.space/aurora.flatpakref</code>
+  </div>
+  <p class="links">
+    <a href="Aurora-x86_64.flatpak">x86_64 nightly Flatpak</a>
+    <a href="Aurora-aarch64.flatpak">aarch64 nightly Flatpak</a>
+  </p>
+  <h2>AUR packages</h2>
+  <p>Available from the AUR. Choose one package:</p>
+  <p class="links">
+    <a href="https://aur.archlinux.org/packages/aurora">aurora</a>
+    <a href="https://aur.archlinux.org/packages/aurora-bin">aurora-bin</a>
+    <a href="https://aur.archlinux.org/packages/aurora-git">aurora-git</a>
+  </p>
+  <code>yay -S aurora
+yay -S aurora-bin
+yay -S aurora-git</code>
+  <h2>DNF repository</h2>
+  <p>Stable and nightly packages for Fedora 44. Choose one package.</p>
+  <code>sudo curl -fsSL https://aurora.bigrat.space/rpm/aurora.repo -o /etc/yum.repos.d/aurora.repo</code>
+  <div class="commands">
+    <p>Stable</p>
+    <code>sudo dnf install aurora</code>
+    <p>Nightly</p>
+    <code>sudo dnf install aurora-nightly</code>
+  </div>
+  <h2>APT repository</h2>
+  <p>Stable and nightly packages for Ubuntu 26.04. Choose one package.</p>
+  <code>sudo install -d -m 0755 /etc/apt/keyrings
+sudo curl -fsSL https://aurora.bigrat.space/aurora-packages.gpg -o /etc/apt/keyrings/aurora.gpg
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/aurora.gpg] https://aurora.bigrat.space/apt aurora main" | sudo tee /etc/apt/sources.list.d/aurora.list &gt;/dev/null
+sudo apt update</code>
+  <div class="commands">
+    <p>Stable</p>
+    <code>sudo apt install aurora</code>
+    <p>Nightly</p>
+    <code>sudo apt install aurora-nightly</code>
+  </div>
+  <h2>Direct downloads</h2>
+  <p>Prebuilt Linux packages. DEB and RPM are for x86_64; the nightly AppImage also has an aarch64 build.</p>
+  <p class="download-label">Stable</p>
+  <p class="links">
+    <a href="https://github.com/Namnarak/Aurora-Player/releases/latest/download/Aurora-x86_64.AppImage">AppImage</a>
+    <a href="https://aurora.bigrat.space/downloads/aurora.deb">DEB</a>
+    <a href="https://aurora.bigrat.space/downloads/aurora.rpm">RPM</a>
+  </p>
+  <p class="download-label">Nightly</p>
+  <p class="links">
+    <a href="https://github.com/Namnarak/Aurora-Player/releases/download/continuous/aurora-nightly.AppImage">AppImage</a>
+    <a href="https://github.com/Namnarak/Aurora-Player/releases/download/continuous/aurora-nightly.deb">DEB</a>
+    <a href="https://github.com/Namnarak/Aurora-Player/releases/download/continuous/aurora-nightly.rpm">RPM</a>
+  </p>
+  <p><a class="source" href="https://github.com/Namnarak/Aurora-Player">Source code</a></p>
+  <p>Aurora is an independent community project and is not affiliated with Roblox Corporation.</p>
+</main></body>
+</html>

@@ -1,0 +1,48 @@
+# Maintainer: Namnarak
+
+pkgname=aurora-bin
+pkgver=1.0.3
+pkgrel=2
+pkgdesc='Android x86-64 Roblox compatibility runtime for Linux (prebuilt)'
+arch=('x86_64')
+url='https://github.com/Namnarak/Aurora-Player'
+license=('Apache-2.0')
+depends=(
+  'capstone'
+  'curl'
+  'fontconfig'
+  'gcc-libs'
+  'glib2'
+  'glibc'
+  'gtk4'
+  'hicolor-icon-theme'
+  'libadwaita'
+  'libelf'
+  'libglvnd'
+  'libplacebo'
+  'libpng'
+  'libsoup3'
+  'libutf8proc'
+  'libyaml'
+  'minizip'
+  'openssl'
+  'sdl3>=3.4'
+  'sdl3_ttf'
+  'vulkan-icd-loader'
+  'webkitgtk-6.0'
+  'zlib'
+)
+optdepends=('gamemode: Feral GameMode integration')
+provides=('aurora')
+conflicts=('aurora' 'aurora-git')
+options=('!debug' '!strip')
+_archive="aurora-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.zst"
+source=("${_archive}::https://github.com/Namnarak/Aurora-Player/releases/download/${pkgver}/${_archive}")
+noextract=("${_archive}")
+sha256sums=('d5cc7216e88fd2889369e8eb7fba4276b2746c2b084dce566aaaa7505bc2ffb7')
+
+package() {
+  bsdtar -xf "${srcdir}/${_archive}" -C "${pkgdir}" usr
+  install -Dm644 "${pkgdir}/usr/share/licenses/aurora/LICENSE" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

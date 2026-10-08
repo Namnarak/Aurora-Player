@@ -1,0 +1,111 @@
+# Copyright 2026 Aurora Project Authors
+# Licensed under the Apache License, Version 2.0.
+
+include_guard(GLOBAL)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(UTF8PROC REQUIRED IMPORTED_TARGET libutf8proc)
+find_package(SDL3_ttf REQUIRED CONFIG)
+pkg_check_modules(FONTCONFIG REQUIRED IMPORTED_TARGET fontconfig)
+
+get_filename_component(AURORA_INPUT_ROOT "${CMAKE_CURRENT_LIST_DIR}/.."
+  ABSOLUTE
+)
+
+add_library(aurora_input_runtime STATIC
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_gamepad_input.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_input_native_adapter.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_input_router.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_native_text_box_info_reader.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_text_display_state.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_text_editor.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_text_font_resolver.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_text_surface_overlay.cc
+  ${AURORA_INPUT_ROOT}/src/runtime/roblox_window_input_runtime.cc
+)
+add_library(Aurora::InputRuntime ALIAS aurora_input_runtime)
+target_include_directories(aurora_input_runtime PUBLIC
+  ${AURORA_INPUT_ROOT}/include
+)
+target_include_directories(aurora_input_runtime PRIVATE
+  ${AURORA_INPUT_ROOT}/src
+)
+target_link_libraries(aurora_input_runtime PUBLIC
+  Aurora::PlatformSdl
+  Aurora::Runtime
+  aurora_window
+  PkgConfig::UTF8PROC
+  PRIVATE
+    PkgConfig::FONTCONFIG
+    SDL3_ttf::SDL3_ttf
+    nlohmann_json::nlohmann_json
+)
+target_compile_features(aurora_input_runtime PUBLIC cxx_std_17)
+aurora_apply_compile_options(aurora_input_runtime)
+
+if(BUILD_TESTING AND TARGET GTest::gtest_main)
+  add_executable(roblox_input_router_test
+    ${AURORA_INPUT_ROOT}/tests/roblox_gamepad_input_test.cc
+    ${AURORA_INPUT_ROOT}/tests/roblox_input_router_test.cc
+  )
+  target_link_libraries(roblox_input_router_test PRIVATE
+    Aurora::InputRuntime
+    GTest::gtest_main
+  )
+  aurora_apply_compile_options(roblox_input_router_test)
+
+  add_executable(roblox_text_editor_test
+    ${AURORA_INPUT_ROOT}/tests/roblox_text_editor_test.cc
+  )
+  target_link_libraries(roblox_text_editor_test PRIVATE
+    Aurora::InputRuntime
+    GTest::gtest_main
+  )
+  aurora_apply_compile_options(roblox_text_editor_test)
+
+  add_executable(roblox_text_display_state_test
+    ${AURORA_INPUT_ROOT}/tests/roblox_text_display_state_test.cc
+  )
+  target_link_libraries(roblox_text_display_state_test PRIVATE
+    Aurora::InputRuntime
+    GTest::gtest_main
+  )
+  aurora_apply_compile_options(roblox_text_display_state_test)
+
+  add_executable(roblox_text_font_resolver_test
+    ${AURORA_INPUT_ROOT}/tests/roblox_text_font_resolver_test.cc
+  )
+  target_link_libraries(roblox_text_font_resolver_test PRIVATE
+    Aurora::InputRuntime
+    GTest::gtest_main
+  )
+  aurora_apply_compile_options(roblox_text_font_resolver_test)
+
+  add_executable(roblox_input_native_adapter_test
+    ${AURORA_INPUT_ROOT}/tests/roblox_input_native_adapter_test.cc
+  )
+  target_link_libraries(roblox_input_native_adapter_test PRIVATE
+    Aurora::InputRuntime
+    Aurora::LegacyJni
+    GTest::gtest_main
+  )
+  aurora_apply_compile_options(roblox_input_native_adapter_test)
+
+  add_executable(roblox_native_text_box_info_reader_test
+    ${AURORA_INPUT_ROOT}/tests/roblox_native_text_box_info_reader_test.cc
+  )
+  target_link_libraries(roblox_native_text_box_info_reader_test PRIVATE
+    Aurora::InputRuntime
+    Aurora::LegacyJni
+    GTest::gtest_main
+  )
+  aurora_apply_compile_options(roblox_native_text_box_info_reader_test)
+
+  include(GoogleTest)
+  gtest_discover_tests(roblox_input_router_test)
+  gtest_discover_tests(roblox_text_editor_test)
+  gtest_discover_tests(roblox_text_display_state_test)
+  gtest_discover_tests(roblox_text_font_resolver_test)
+  gtest_discover_tests(roblox_input_native_adapter_test)
+  gtest_discover_tests(roblox_native_text_box_info_reader_test)
+endif()

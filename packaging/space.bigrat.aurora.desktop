@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Aurora Player
+GenericName=Roblox Player for Linux
+Comment=Play Roblox on Linux with Aurora Player
+Exec=aurora %u
+Icon=space.bigrat.aurora
+StartupWMClass=space.bigrat.aurora
+Categories=Game;
+Terminal=false
+MimeType=x-scheme-handler/roblox;x-scheme-handler/roblox-player;
+X-Aurora-Managed=true
