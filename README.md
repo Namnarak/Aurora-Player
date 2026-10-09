@@ -26,6 +26,21 @@ Read the [Terms of Use](TERMS.md) and [Privacy Policy](PRIVACY.md) before use.
 Packages install third-party license and notice files under
 `/usr/share/doc/aurora-player/third-party/`.
 
+## Downloads and Linux packages
+
+Download tested build artifacts from [GitHub Releases](https://github.com/Namnarak/Aurora-Player/releases).
+
+- **AppImage:** standalone x86_64 portable build
+- **DEB:** Ubuntu 26.04
+- **RPM:** Fedora 44
+- **Flatpak bundle:** install from downloaded file
+- **AUR recipes:** aurora, aurora-git, aurora-bin (manual publication is separate)
+
+After the distribution pipeline passes, the rolling development prerelease is
+available at [continuous](https://github.com/Namnarak/Aurora-Player/releases/tag/continuous).
+The Flathub listing and signed APT/DNF repositories are **not yet published**.
+See [Distribution Guide](docs/DISTRIBUTION.md) for installation and release details.
+
 ## Build
 
 The build uses CMake, Ninja, a C++17 compiler, pkg-config, and the native

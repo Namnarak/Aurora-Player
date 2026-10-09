@@ -695,8 +695,20 @@ target_link_libraries(aurora_mcp PRIVATE
 aurora_apply_compile_options(aurora_mcp)
 
 # Native FreeBSD helper for Linuxulator's unsupported DF socket option.
+# The Linuxulator helper contains x86_64 assembly and cannot build on AArch64.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
+  set(AURORA_FREEBSD_SOCKET_HELPER_DEFAULT ON)
+else()
+  set(AURORA_FREEBSD_SOCKET_HELPER_DEFAULT OFF)
+endif()
 option(AURORA_BUILD_FREEBSD_SOCKET_HELPER
-  "Build the native FreeBSD Linuxulator socket helper" ON)
+  "Build the x86_64-only FreeBSD Linuxulator socket helper"
+  ${AURORA_FREEBSD_SOCKET_HELPER_DEFAULT})
+if(AURORA_BUILD_FREEBSD_SOCKET_HELPER AND
+   NOT AURORA_FREEBSD_SOCKET_HELPER_DEFAULT)
+  message(FATAL_ERROR
+    "The FreeBSD Linuxulator socket helper requires an x86_64 build target")
+endif()
 if(AURORA_BUILD_FREEBSD_SOCKET_HELPER)
 find_program(AURORA_LLD_EXECUTABLE NAMES ld.lld REQUIRED)
 find_program(AURORA_ELFEDIT_EXECUTABLE NAMES elfedit REQUIRED)

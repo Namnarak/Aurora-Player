@@ -13,7 +13,11 @@ readonly PUBLIC_KEY="${5:?GPG public key path is required}"
 readonly GPG_KEY_ID="${6:?GPG key ID is required}"
 readonly GPG_HOME="${7:?GPG home path is required}"
 readonly OUTPUT="${8:?Repository output path is required}"
-readonly BASE_URL="https://aurora.bigrat.space"
+readonly BASE_URL="${AURORA_REPO_BASE_URL:?Set AURORA_REPO_BASE_URL to your public HTTPS repository base URL}"
+[[ "$BASE_URL" == https://* && "$BASE_URL" != */ ]] || {
+  echo "AURORA_REPO_BASE_URL must be HTTPS without a trailing slash" >&2
+  exit 1
+}
 
 for command in apt-ftparchive createrepo_c dpkg-deb gpg gzip rpm rpmsign; do
   command -v "${command}" >/dev/null || {
@@ -43,10 +47,10 @@ done
   exit 1
 }
 
-[[ "$(dpkg-deb --field "${STABLE_DEB}" Package)" == aurora ]]
-[[ "$(dpkg-deb --field "${NIGHTLY_DEB}" Package)" == aurora-nightly ]]
-[[ "$(rpm --query --package --queryformat '%{NAME}' "${STABLE_RPM}")" == aurora ]]
-[[ "$(rpm --query --package --queryformat '%{NAME}' "${NIGHTLY_RPM}")" == aurora-nightly ]]
+[[ "$(dpkg-deb --field "${STABLE_DEB}" Package)" == aurora-player ]]
+[[ "$(dpkg-deb --field "${NIGHTLY_DEB}" Package)" == aurora-player-nightly ]]
+[[ "$(rpm --query --package --queryformat '%{NAME}' "${STABLE_RPM}")" == aurora-player ]]
+[[ "$(rpm --query --package --queryformat '%{NAME}' "${NIGHTLY_RPM}")" == aurora-player-nightly ]]
 
 readonly APT_ROOT="${OUTPUT}/apt"
 readonly APT_POOL="${APT_ROOT}/pool/main/m/aurora"

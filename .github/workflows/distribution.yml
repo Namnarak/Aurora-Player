@@ -1,0 +1,247 @@
+name: Aurora Distribution
+on:
+  push:
+    branches: [main]
+    tags: ['v[0-9]*', '[0-9]*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: aurora-distribution-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate metadata and tag
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          bash scripts/validate_distribution.sh
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            tag="${GITHUB_REF_NAME#v}"
+            version="$(sed -nE 's/^[[:space:]]*VERSION[[:space:]]+([0-9]+(\.[0-9]+)+).*/\1/p' CMakeLists.txt | head -1)"
+            [[ "$tag" == "$version" ]] || { echo "Tag/version mismatch"; exit 1; }
+          fi
+  quality:
+    name: Runtime regression gate x86_64
+    needs: contracts
+    runs-on: ubuntu-26.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential binutils cmake git ninja-build pkg-config lld libsdl3-dev libsdl3-ttf-dev libcurl4-openssl-dev libssl-dev nlohmann-json3-dev libyaml-dev libelf-dev libminizip-dev libcapstone-dev libgtk-4-dev libadwaita-1-dev libwebkitgtk-6.0-dev libutf8proc-dev libfontconfig1-dev libegl-dev libvulkan-dev libplacebo-dev libpng-dev zlib1g-dev xvfb xauth libgl1-mesa-dri jq patchelf
+      - name: Build and run tests headlessly
+        shell: bash
+        env:
+          SDL_AUDIODRIVER: dummy
+          SDL_VIDEODRIVER: x11
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          set -Eeuo pipefail
+          cmake -S . -B build-quality -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+          cmake --build build-quality --parallel 4
+          ./build-quality/aurora --help
+          xvfb-run -a ctest --test-dir build-quality --output-on-failure --parallel 4 --timeout 120
+  deb:
+    name: DEB Ubuntu 26.04
+    needs: contracts
+    runs-on: ubuntu-26.04
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends build-essential binutils cmake git ninja-build pkg-config lld libsdl3-dev libsdl3-ttf-dev libcurl4-openssl-dev libssl-dev nlohmann-json3-dev libyaml-dev libelf-dev libminizip-dev libcapstone-dev libgtk-4-dev libadwaita-1-dev libwebkitgtk-6.0-dev libutf8proc-dev libfontconfig1-dev libegl-dev libvulkan-dev libplacebo-dev libpng-dev zlib1g-dev dpkg-dev
+      - name: Build verified DEB
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          name=aurora-player; suffix=""
+          if [[ "$GITHUB_REF_TYPE" != tag ]]; then
+            name=aurora-player-nightly; suffix=".nightly.$GITHUB_RUN_NUMBER"
+          fi
+          cmake -S . -B build-deb -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr -DAURORA_PACKAGE_NAME="$name" \
+            -DAURORA_PACKAGE_VERSION_SUFFIX="$suffix" -DBUILD_TESTING=OFF
+          cmake --build build-deb --parallel 4
+          mkdir -p dist/deb
+          cpack --config build-deb/CPackConfig.cmake -G DEB -B dist/deb
+          for pkg in dist/deb/*.deb; do
+            test -s "$pkg"
+            test "$(dpkg-deb --field "$pkg" Package)" = "$name"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Aurora-DEB
+          path: dist/deb/*.deb
+          if-no-files-found: error
+  rpm:
+    name: RPM Fedora 44
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build verified RPM in Fedora
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          name=aurora-player; suffix=""
+          if [[ "$GITHUB_REF_TYPE" != tag ]]; then
+            name=aurora-player-nightly; suffix=".nightly.$GITHUB_RUN_NUMBER"
+          fi
+          docker run --rm -v "$PWD:/workspace" -w /workspace \
+            -e AURORA_PACKAGE_NAME="$name" -e AURORA_PACKAGE_VERSION_SUFFIX="$suffix" \
+            fedora:44 bash -Eeuo pipefail -c '
+              dnf install -y gcc-c++ cmake git ninja-build pkgconf-pkg-config lld rpm-build \
+                SDL3-devel SDL3_ttf-devel libcurl-devel openssl-devel \
+                nlohmann-json-devel libyaml-devel elfutils-libelf-devel \
+                minizip-ng-compat-devel capstone-devel gtk4-devel libadwaita-devel \
+                webkitgtk6.0-devel utf8proc-devel fontconfig-devel \
+                libglvnd-devel vulkan-headers vulkan-loader-devel \
+                libplacebo-devel libpng-devel zlib-ng-compat-devel
+              cmake -S . -B build-rpm -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
+                -DAURORA_PACKAGE_NAME="$AURORA_PACKAGE_NAME" \
+                -DAURORA_PACKAGE_VERSION_SUFFIX="$AURORA_PACKAGE_VERSION_SUFFIX" \
+                -DBUILD_TESTING=OFF
+              cmake --build build-rpm --parallel 4
+              mkdir -p dist/rpm
+              cpack --config build-rpm/CPackConfig.cmake -G RPM -B dist/rpm
+              for pkg in dist/rpm/*.rpm; do
+                test -s "$pkg"
+                rpm -qp --queryformat "%{NAME}" "$pkg" | grep -Fx "$AURORA_PACKAGE_NAME"
+              done
+            '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Aurora-RPM
+          path: dist/rpm/*.rpm
+          if-no-files-found: error
+  appimage:
+    name: AppImage standalone x86_64
+    needs: contracts
+    runs-on: ubuntu-26.04
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install AppImage dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            build-essential binutils cmake git ninja-build pkg-config lld libsdl3-dev libsdl3-ttf-dev libcurl4-openssl-dev libssl-dev nlohmann-json3-dev libyaml-dev libelf-dev libminizip-dev libcapstone-dev libgtk-4-dev libadwaita-1-dev libwebkitgtk-6.0-dev libutf8proc-dev libfontconfig1-dev libegl-dev libvulkan-dev libplacebo-dev libpng-dev zlib1g-dev bubblewrap xdg-dbus-proxy jq unzip file \
+            default-jdk-headless ca-certificates-java patchelf zip squashfs-tools
+      - name: Download checksum-pinned AppImage packager
+        shell: bash
+        run: |
+          curl -fL --retry 3 -o /tmp/aurora-appimagetool \
+            https://github.com/pkgforge-dev/appimagetool/releases/download/0.3.3/appimagetool-x86_64-linux
+          echo '0d01a4e2628efc897be9663f0faeed6a171e1851270b4e1ce4c22434a36ecebd  /tmp/aurora-appimagetool' | sha256sum -c -
+          sudo install -m 0755 /tmp/aurora-appimagetool /usr/local/bin/appimagetool
+      - name: Build and test AppImage
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ./scripts/build_release.sh --libc glibc --mode standalone --jobs 4
+          test -s dist/Aurora-x86_64-glibc-standalone.AppImage
+          timeout 90s dist/Aurora-x86_64-glibc-standalone.AppImage --appimage-extract-and-run --help
+          (cd dist && sha256sum Aurora-x86_64-glibc-standalone.AppImage > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Aurora-AppImage
+          path: |
+            dist/Aurora-x86_64-glibc-standalone.AppImage
+            dist/SHA256SUMS
+          if-no-files-found: error
+  flatpak:
+    name: Flatpak x86_64
+    needs: contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Flatpak Builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      - name: Pin Flatpak source to this commit
+        shell: bash
+        run: |
+          python3 - <<'PYMANIFEST'
+          from pathlib import Path
+          import json, os
+          data=json.loads(Path('packaging/flatpak/space.bigrat.aurora.json').read_text())
+          mod=[m for m in data['modules'] if m['name']=='aurora']
+          assert len(mod)==1 and len(mod[0]['sources'])==1
+          mod[0]['sources']=[{'type':'git','url':'https://github.com/Namnarak/Aurora-Player.git','commit':os.environ['GITHUB_SHA']}]
+          Path('packaging/flatpak/aurora-ci.json').write_text(json.dumps(data,indent=2)+'\n')
+          PYMANIFEST
+      - name: Build Flatpak bundle
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          flatpak-builder --user --force-clean --install-deps-from=flathub \
+            --default-branch=stable --repo=flatpak-repo \
+            build-flatpak packaging/flatpak/aurora-ci.json
+          mkdir -p dist/flatpak
+          flatpak build-bundle flatpak-repo dist/flatpak/Aurora-x86_64.flatpak space.bigrat.aurora stable
+          test -s dist/flatpak/Aurora-x86_64.flatpak
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Aurora-Flatpak
+          path: dist/flatpak/*.flatpak
+          if-no-files-found: error
+  publish:
+    name: Publish on GitHub Releases
+    needs: [contracts, quality, deb, rpm, appimage, flatpak]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Aurora-*
+          merge-multiple: true
+          path: distribution-files
+      - name: Verify all artifacts before publishing
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(find distribution-files -maxdepth 1 -name '*.deb' | wc -l)" -ge 1
+          test "$(find distribution-files -maxdepth 1 -name '*.rpm' | wc -l)" -ge 1
+          test "$(find distribution-files -maxdepth 1 -name '*.AppImage' | wc -l)" -eq 1
+          test "$(find distribution-files -maxdepth 1 -name '*.flatpak' | wc -l)" -eq 1
+          (cd distribution-files && sha256sum -c SHA256SUMS)
+      - name: Publish stable tag or rolling continuous nightly
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            tag="$GITHUB_REF_NAME"
+            if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              gh release create "$tag" --repo "$GITHUB_REPOSITORY" \
+                --verify-tag --title "Aurora Player $tag" \
+                --notes "Verified Aurora Player builds. Roblox APK is not bundled."
+            fi
+          else
+            tag=continuous
+            if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              gh release create "$tag" --repo "$GITHUB_REPOSITORY" \
+                --target "$GITHUB_SHA" --title "Aurora Player Nightly" \
+                --prerelease --notes "Nightly main builds, experimental. Roblox APK is not bundled."
+            else
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/continuous" \
+                -f sha="$GITHUB_SHA" -F force=true >/dev/null
+            fi
+          fi
+          gh release upload "$tag" distribution-files/* --repo "$GITHUB_REPOSITORY" --clobber
+          echo "PUBLISHED_RELEASE=$tag"

@@ -349,14 +349,15 @@ TEST(WebViewHelperLauncherTest, OwnsAndClosesTheExactSpawnedProcess) {
   const std::filesystem::path helper = temporary.path() / "fake-helper";
   const std::filesystem::path close_packet = temporary.path() / "close-packet";
   const std::filesystem::path ready = temporary.path() / "ready";
-  ASSERT_TRUE(WriteExecutable(helper,
-                              "#!/bin/sh\n"
-                              "cat >/dev/null\n"
-                              "touch '" +
-                                  ready.string() +
-                                  "'\n"
-                                  "dd bs=65548 count=1 status=none <&198 >'" +
-                                  close_packet.string() + "'\n"));
+  ASSERT_TRUE(WriteExecutable(
+      helper,
+      "#!/usr/bin/env python3\n"
+      "import pathlib, socket, sys\n"
+      "sys.stdin.buffer.read()\n"
+      "pathlib.Path('" + ready.string() + "').touch()\n"
+      "with socket.socket(fileno=198) as control:\n"
+      "    pathlib.Path('" + close_packet.string() +
+          "').write_bytes(control.recv(65548))\n"));
 
   const WebViewHelperLaunchResult result =
       LaunchWebViewHelper(helper, "https://www.roblox.com/login");

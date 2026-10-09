@@ -1,0 +1,29 @@
+name: AUR package checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/aur-check.yml'
+      - 'packaging/aur/**'
+      - 'CMakeLists.txt'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PKGBUILDs and .SRCINFO
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          docker run --rm -v "$PWD:/workspace:ro" -w /workspace \
+            archlinux:base-devel bash -Eeuo pipefail -c '
+              for pkg in aurora aurora-bin aurora-git; do
+                cd "/workspace/packaging/aur/$pkg"
+                bash -n PKGBUILD
+                makepkg --printsrcinfo > "/tmp/$pkg.SRCINFO"
+                diff -u .SRCINFO "/tmp/$pkg.SRCINFO"
+              done
+            '
