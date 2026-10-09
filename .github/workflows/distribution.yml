@@ -181,7 +181,7 @@ jobs:
       - name: Install Flatpak Builder
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder
+          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder dbus-bin
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak install --user -y flathub org.flatpak.Builder
       - name: Pin Flatpak source to this commit
@@ -200,7 +200,9 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          flatpak run org.flatpak.Builder --user --force-clean --install-deps-from=flathub \
+          # Flatpak Builder may launch a nested flatpak --user install.
+          # GitHub headless runners need an explicit D-Bus session bus.
+          dbus-run-session -- flatpak run org.flatpak.Builder --user --force-clean --install-deps-from=flathub \
             --default-branch=stable --repo=flatpak-repo \
             build-flatpak packaging/flatpak/aurora-ci.json
           mkdir -p dist/flatpak
