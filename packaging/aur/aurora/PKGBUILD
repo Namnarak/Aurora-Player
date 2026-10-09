@@ -1,8 +1,9 @@
 # Maintainer: Namnarak
 
 pkgname=aurora
+epoch=1
 pkgver=1.0.0
-pkgrel=2
+pkgrel=1
 pkgdesc='Android x86-64 Roblox compatibility runtime for Linux'
 arch=('x86_64')
 url='https://github.com/Namnarak/Aurora-Player'

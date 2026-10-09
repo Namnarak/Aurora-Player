@@ -316,6 +316,10 @@ TEST(WebViewHelperLauncherTest, SendsNormalizedInternalRouteToHelper) {
       LaunchWebViewHelper(helper, "www:games/servers-section/987654321");
   ASSERT_TRUE(result) << result.error;
   ASSERT_TRUE(WaitForFile(output, std::chrono::seconds(2)));
+  // The helper creates the output file before cat finishes writing to it.
+  // Wait for the child to exit and be reaped before reading the full request.
+  ASSERT_TRUE(WaitForProcessToBeReaped(result.process_id,
+                                      std::chrono::seconds(2)));
 
   std::ifstream input(output);
   const std::string request((std::istreambuf_iterator<char>(input)),

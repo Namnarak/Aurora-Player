@@ -1,8 +1,9 @@
 # Maintainer: Namnarak
 
 pkgname=aurora-bin
-pkgver=1.0.3
-pkgrel=3
+epoch=1
+pkgver=1.0.0
+pkgrel=1
 pkgdesc='Aurora Player standalone AppImage for Linux (prebuilt)'
 arch=('x86_64')
 url='https://github.com/Namnarak/Aurora-Player'
@@ -13,7 +14,7 @@ provides=('aurora')
 conflicts=('aurora' 'aurora-git')
 options=('!debug' '!strip')
 
-# Release 1.0.3 publishes an AppImage, not a pacman .pkg.tar.zst archive.
+# Stable releases publish a checksum-pinned AppImage, not a pacman .pkg.tar.zst archive.
 # Pin the exact release artifact and its SHA256 rather than referencing a 404.
 _appimage='Aurora-x86_64-glibc-standalone.AppImage'
 source=(
@@ -24,7 +25,7 @@ source=(
 )
 noextract=("${_appimage}")
 sha256sums=(
-  '7c005a6c1464feb3e4dbda0429c8f939a67e3ad946ecaffd065debe633e7635b'
+  '8d81bc32262caf898a8090c64f90f44fb9343fe95b19645e463f11344acef71e'
   'e274d2cd8246ccc0eed772209178b77295e63eb0895c9e8a0acacae6fc8cee54'
   '016930a068c8ff990ab2a6a934ad99b9a5c239ff4ef0e148c511e0181efac40f'
   '27238097e0d1332c588015a3b724146946a81f2a7b28b3d7a8d44d528ad49d5b'
