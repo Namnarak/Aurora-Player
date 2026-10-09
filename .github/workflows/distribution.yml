@@ -144,8 +144,20 @@ jobs:
             https://github.com/pkgforge-dev/appimagetool/releases/download/0.3.3/appimagetool-x86_64-linux
           echo '0d01a4e2628efc897be9663f0faeed6a171e1851270b4e1ce4c22434a36ecebd  /tmp/aurora-appimagetool' | sha256sum -c -
           sudo install -m 0755 /tmp/aurora-appimagetool /usr/local/bin/appimagetool
+      - name: Install verified Android SDK Build Tools
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          curl -fL --retry 3             -o "$RUNNER_TEMP/android-build-tools.zip"             https://dl.google.com/android/repository/build-tools_r35.0.1_linux.zip
+          echo "5993499f3229a021b89f87088c57242aeefaa62316bf3d69da7de40bfd5350f1  $RUNNER_TEMP/android-build-tools.zip" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/android-sdk"
+          unzip -q "$RUNNER_TEMP/android-build-tools.zip" -d "$RUNNER_TEMP/android-sdk"
+          test -s "$RUNNER_TEMP/android-sdk/android-15/lib/apksigner.jar"
+          test -x "$RUNNER_TEMP/android-sdk/android-15/aapt"
       - name: Build and test AppImage
         shell: bash
+        env:
+          AURORA_ANDROID_BUILD_TOOLS_ROOT: ${{ runner.temp }}/android-sdk/android-15
         run: |
           set -Eeuo pipefail
           ./scripts/build_release.sh --libc glibc --mode standalone --jobs 4
@@ -171,6 +183,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends flatpak flatpak-builder
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y flathub org.flatpak.Builder
       - name: Pin Flatpak source to this commit
         shell: bash
         run: |
@@ -187,7 +200,7 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          flatpak-builder --user --force-clean --install-deps-from=flathub \
+          flatpak run org.flatpak.Builder --user --force-clean --install-deps-from=flathub \
             --default-branch=stable --repo=flatpak-repo \
             build-flatpak packaging/flatpak/aurora-ci.json
           mkdir -p dist/flatpak
@@ -244,4 +257,7 @@ jobs:
             fi
           fi
           gh release upload "$tag" distribution-files/* --repo "$GITHUB_REPOSITORY" --clobber
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --latest
+          fi
           echo "PUBLISHED_RELEASE=$tag"

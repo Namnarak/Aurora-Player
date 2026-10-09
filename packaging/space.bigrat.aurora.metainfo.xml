@@ -26,15 +26,15 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/Namnarak/Aurora-Player/1.0.3/assets/screenshots/flatpak-home.png</image>
+      <image>https://raw.githubusercontent.com/Namnarak/Aurora-Player/85dfb76a9c04554abab3af06cc281eb0c401d8bb/assets/screenshots/flatpak-home.png</image>
       <caption>Browse Roblox experiences</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/Namnarak/Aurora-Player/1.0.3/assets/screenshots/flatpak-gameplay-tower.png</image>
+      <image>https://raw.githubusercontent.com/Namnarak/Aurora-Player/85dfb76a9c04554abab3af06cc281eb0c401d8bb/assets/screenshots/flatpak-gameplay-tower.png</image>
       <caption>Play Tower of Hell on Linux</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/Namnarak/Aurora-Player/1.0.3/assets/screenshots/flatpak-gameplay-lobby.png</image>
+      <image>https://raw.githubusercontent.com/Namnarak/Aurora-Player/85dfb76a9c04554abab3af06cc281eb0c401d8bb/assets/screenshots/flatpak-gameplay-lobby.png</image>
       <caption>Play DOORS on Linux</caption>
     </screenshot>
   </screenshots>
@@ -55,7 +55,7 @@
     <binary>aurora</binary>
   </provides>
   <releases>
-    <release version="1.0.3" date="2026-10-08">
+    <release version="1.0.0" date="2026-10-09">
       <description>
         <ul>
           <li>Aurora Player standalone AppImage for Linux x86_64.</li>

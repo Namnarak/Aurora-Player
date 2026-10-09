@@ -1,6 +1,6 @@
 pkgbase = aurora
 	pkgdesc = Android x86-64 Roblox compatibility runtime for Linux
-	pkgver = 1.0.3
+	pkgver = 1.0.0
 	pkgrel = 2
 	url = https://github.com/Namnarak/Aurora-Player
 	arch = x86_64
@@ -40,7 +40,7 @@ pkgbase = aurora
 	conflicts = aurora-git
 	options = !debug
 	options = !lto
-	source = aurora::git+https://github.com/Namnarak/Aurora-Player.git#tag=1.0.3
+	source = aurora::git+https://github.com/Namnarak/Aurora-Player.git#tag=1.0.0
 	sha256sums = SKIP
 
 pkgname = aurora

@@ -379,7 +379,7 @@ std::optional<Json> HandleRequest(const Json& request, ServerState* state) {
     return response(Json{{"protocolVersion", "2024-11-05"},
                          {"capabilities", {{"tools", {{"listChanged", false}}}}},
                          {"serverInfo", {{"name", "aurora-mcp"},
-                                          {"version", "1.0.3"}}}});
+                                          {"version", "1.0.0"}}}});
   }
   if (method == "ping") return response(Json::object());
   if (method == "tools/list") return response(Json{{"tools", Tools()}});

@@ -1,7 +1,7 @@
 # Maintainer: Namnarak
 
 pkgname=aurora
-pkgver=1.0.3
+pkgver=1.0.0
 pkgrel=2
 pkgdesc='Android x86-64 Roblox compatibility runtime for Linux'
 arch=('x86_64')

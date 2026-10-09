@@ -1,7 +1,7 @@
 # Maintainer: Namnarak
 
 pkgname=aurora
-pkgver=1.0.3
+pkgver=1.0.0
 pkgrel=2
 pkgdesc='Android x86-64 Roblox compatibility runtime for Linux'
 arch=('x86_64')
@@ -43,7 +43,7 @@ makedepends=(
 )
 optdepends=('gamemode: Feral GameMode integration')
 conflicts=('aurora-bin' 'aurora-git')
-# The 1.0.3 tag predates the source-level FORTIFY/LTO isolation fix.
+# The original upstream tag predates the source-level FORTIFY/LTO isolation fix.
 options=('!debug' '!lto')
 source=(
   "aurora::git+https://github.com/Namnarak/Aurora-Player.git#tag=${pkgver}"

@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.20)
 project(AuroraPlayer
-  VERSION 1.0.3
+  VERSION 1.0.0
   DESCRIPTION "Aurora Player Android x86-64 Roblox runtime for Linux"
   LANGUAGES CXX
 )
