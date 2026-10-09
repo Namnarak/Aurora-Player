@@ -137,6 +137,20 @@ jobs:
           sudo apt-get install --yes --no-install-recommends \
             build-essential binutils cmake git ninja-build pkg-config lld libsdl3-dev libsdl3-ttf-dev libcurl4-openssl-dev libssl-dev nlohmann-json3-dev libyaml-dev libelf-dev libminizip-dev libcapstone-dev libgtk-4-dev libadwaita-1-dev libwebkitgtk-6.0-dev libutf8proc-dev libfontconfig1-dev libegl-dev libvulkan-dev libplacebo-dev libpng-dev zlib1g-dev bubblewrap xdg-dbus-proxy jq unzip file \
             default-jdk-headless ca-certificates-java patchelf zip squashfs-tools
+      - name: Install full JDK with jlink modules
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify JMOD support for standalone Java runtime
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -s "$JAVA_HOME/jmods/java.base.jmod"
+          test -s "$JAVA_HOME/jmods/java.logging.jmod"
+          test -s "$JAVA_HOME/jmods/java.desktop.jmod"
+          test -s "$JAVA_HOME/jmods/jdk.zipfs.jmod"
+          test "$(realpath "$(command -v jlink)")" = "$JAVA_HOME/bin/jlink"
       - name: Download checksum-pinned AppImage packager
         shell: bash
         run: |
