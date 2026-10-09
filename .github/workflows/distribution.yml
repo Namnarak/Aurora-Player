@@ -146,11 +146,19 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          test -s "$JAVA_HOME/jmods/java.base.jmod"
-          test -s "$JAVA_HOME/jmods/java.logging.jmod"
-          test -s "$JAVA_HOME/jmods/java.desktop.jmod"
-          test -s "$JAVA_HOME/jmods/jdk.zipfs.jmod"
-          test "$(realpath "$(command -v jlink)")" = "$JAVA_HOME/bin/jlink"
+          # setup-java may use toolcache symlinks. Match the canonical JDK
+          # home that standalone packaging derives from the resolved jlink.
+          jlink_path="$(realpath -e "$(command -v jlink)")"
+          jdk_home="$(dirname "$(dirname "$jlink_path")")"
+          echo "Selected JDK: $jdk_home"
+          echo "JAVA_HOME: $JAVA_HOME"
+          for module in java.base java.logging java.desktop jdk.zipfs; do
+            if [[ ! -s "$jdk_home/jmods/$module.jmod" ]]; then
+              echo "::error::Missing JMOD $module under $jdk_home/jmods"
+              ls -la "$jdk_home/jmods" || true
+              exit 1
+            fi
+          done
       - name: Download checksum-pinned AppImage packager
         shell: bash
         run: |
