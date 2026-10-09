@@ -1,4 +1,19 @@
-# Aurora Player
+<!-- CYTECH_README_REFRESH:START -->
+<div align="center">
+
+<a href="https://github.com/Namnarak/Aurora-Player"><img width="100%" alt="Aurora Player banner" src="https://capsule-render.vercel.app/api?type=waving&color=0:0B1628,100:4F8CFF&height=210&section=header&text=Aurora%20Player&fontSize=43&fontColor=ffffff&fontAlignY=36&desc=A%20community-driven%20Roblox%20player%20for%20Linux&descAlignY=59&descSize=16"></a>
+
+<img alt="PROJECT: Linux Gaming" src="https://img.shields.io/badge/PROJECT-Linux%20Gaming-4F8CFF?style=flat-square&labelColor=0B1628&color=4F8CFF"> <img alt="STACK: C++17 · Vulkan" src="https://img.shields.io/badge/STACK-C%2B%2B17%20%C2%B7%20Vulkan-4F8CFF?style=flat-square&labelColor=0B1628&color=4F8CFF">
+
+<p><strong>A community-driven Roblox player for Linux</strong></p>
+
+<a href="https://github.com/Namnarak/Aurora-Player/releases">Releases</a> · <a href="https://github.com/Namnarak/Aurora-Player/issues">Issues</a> · <a href="https://github.com/Namnarak/Aurora-Player">Source</a>
+
+</div>
+
+<!-- CYTECH_README_REFRESH:END -->
+
+---
 
 [![CI](https://github.com/Namnarak/Aurora-Player/actions/workflows/ci.yml/badge.svg)](https://github.com/Namnarak/Aurora-Player/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
