@@ -940,7 +940,18 @@ BuildAppImage() {
   done
   ln -s space.bigrat.aurora.svg "${APPDIR}/.DirIcon"
   mkdir -p -- "$(dirname -- "${APPIMAGE_OUTPUT}")"
-  ARCH=x86_64 appimagetool "${APPDIR}" "${APPIMAGE_OUTPUT}"
+  # AppImageKit takes positional APPDIR OUTPUT, while pkgforge-dev
+  # appimagetool 0.3.x requires --output DIR and --name FILE.
+  if appimagetool --help 2>&1 | grep -Fq -- '--name <NAME>'; then
+    appimagetool --appimage-arch x86_64 \
+      --output "$(dirname -- "${APPIMAGE_OUTPUT}")" \
+      --name "$(basename -- "${APPIMAGE_OUTPUT}")" "${APPDIR}"
+  else
+    ARCH=x86_64 appimagetool "${APPDIR}" "${APPIMAGE_OUTPUT}"
+  fi
+  [[ -f "${APPIMAGE_OUTPUT}" && -s "${APPIMAGE_OUTPUT}" &&
+     -x "${APPIMAGE_OUTPUT}" ]] ||
+    Die "appimagetool did not produce an executable at ${APPIMAGE_OUTPUT}"
   rm -rf -- "${APPDIR}"
   APPDIR=""
   Log "AppImage ready: ${APPIMAGE_OUTPUT}"
