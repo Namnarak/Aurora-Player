@@ -3,6 +3,8 @@
 
 <a href="https://github.com/Namnarak/Aurora-Player"><img width="100%" alt="Aurora Player banner" src="https://capsule-render.vercel.app/api?type=waving&color=0:0B1628,100:4F8CFF&height=210&section=header&text=Aurora%20Player&fontSize=43&fontColor=ffffff&fontAlignY=36&desc=A%20community-driven%20Roblox%20player%20for%20Linux&descAlignY=59&descSize=16"></a>
 
+<p><img src="packaging/aurora-logo.png" alt="Aurora-Player logo" width="136" /></p>
+
 <img alt="PROJECT: Linux Gaming" src="https://img.shields.io/badge/PROJECT-Linux%20Gaming-4F8CFF?style=flat-square&labelColor=0B1628&color=4F8CFF"> <img alt="STACK: C++17 · Vulkan" src="https://img.shields.io/badge/STACK-C%2B%2B17%20%C2%B7%20Vulkan-4F8CFF?style=flat-square&labelColor=0B1628&color=4F8CFF">
 
 <p><strong>A community-driven Roblox player for Linux</strong></p>
@@ -96,3 +98,19 @@ Third-party components retain their own licenses and notices under
 [`third_party/`](third_party/). First-party files moved from the pre-split
 Aurora tree are listed with their author and license provenance in
 [`LICENSES/PROVENANCE.md`](LICENSES/PROVENANCE.md).
+
+---
+
+<!-- CYTECH_STAR_HISTORY:START -->
+
+## Star History
+
+<a href="https://star-history.dera.page/#Namnarak/Aurora-Player&type=date&legend=top-left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=Namnarak/Aurora-Player&type=date&legend=top-left&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=Namnarak/Aurora-Player&type=date&legend=top-left" />
+    <img alt="GitHub star history for Namnarak/Aurora-Player" src="https://star-history.dera.page/svg?repos=Namnarak/Aurora-Player&type=date&legend=top-left" width="800" />
+  </picture>
+</a>
+
+<!-- CYTECH_STAR_HISTORY:END -->
