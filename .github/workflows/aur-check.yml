@@ -20,10 +20,13 @@ jobs:
           set -Eeuo pipefail
           docker run --rm -v "$PWD:/workspace:ro" -w /workspace \
             archlinux:base-devel bash -Eeuo pipefail -c '
+              useradd -m builder
               for pkg in aurora aurora-bin aurora-git; do
-                cd "/workspace/packaging/aur/$pkg"
-                bash -n PKGBUILD
-                makepkg --printsrcinfo > "/tmp/$pkg.SRCINFO"
-                diff -u .SRCINFO "/tmp/$pkg.SRCINFO"
+                root="/workspace/packaging/aur/$pkg"
+                bash -n "$root/PKGBUILD"
+                install -d -o builder -g builder "/tmp/aurora-$pkg"
+                install -m 0644 -o builder -g builder "$root/PKGBUILD" "/tmp/aurora-$pkg/PKGBUILD"
+                runuser -u builder -- bash -c "cd /tmp/aurora-$pkg && makepkg --printsrcinfo" > "/tmp/$pkg.SRCINFO"
+                diff -u "$root/.SRCINFO" "/tmp/$pkg.SRCINFO"
               done
             '
