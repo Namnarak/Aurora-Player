@@ -421,6 +421,9 @@ done
 [[ ! -e "${standalone_runtime}/lib/girepository-1.0" ]]
 [[ ! -e "${standalone_runtime}/runtime/share/girepository-1.0" ]]
 [[ -f "${standalone_runtime}/lib/libadwaita-1.so.0" ]]
+[[ -s "${standalone_runtime}/fonts/NotoSansThai-Regular.ttf" ]]
+[[ -s "${standalone_runtime}/share/doc/aurora-player/third-party/noto/Noto-Fonts-OFL-1.1.txt" ]]
+[[ -s "${standalone_runtime}/share/doc/aurora-player/third-party/noto/Noto-CJK-OFL-1.1.txt" ]]
 [[ -n "$(find "${standalone_runtime}/lib" -mindepth 1 -type f \
   -print -quit)" ]]
 [[ -n "$(find "${standalone_runtime}/libexec" -mindepth 1 -type f \

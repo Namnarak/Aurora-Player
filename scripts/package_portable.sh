@@ -477,13 +477,6 @@ CopyRuntimeTree() {
   chmod 0755 -- "${STAGING}"
 
   cp -a -- "${PROJECT_ROOT}/third_party/noto/fonts" "${runtime_root}/fonts"
-  local font_notice_dir="${runtime_root}/share/doc/aurora-player/third-party/noto"
-  mkdir -p -- "${font_notice_dir}"
-  install -m 0644 -- "${PROJECT_ROOT}/third_party/noto/README.md" \
-    "${PROJECT_ROOT}/third_party/noto/SHA256SUMS.txt" \
-    "${font_notice_dir}/"
-  install -m 0644 -- "${PROJECT_ROOT}"/third_party/noto/LICENSES/* \
-    "${font_notice_dir}/"
 
   local artifact mode
   for artifact in "${PROJECT_ARTIFACTS[@]}"; do
@@ -510,6 +503,17 @@ CopyRuntimeTree() {
     install -m 0755 -- "${PROJECT_ROOT}/scripts/${script}" \
       "${runtime_root}/scripts/${script}"
   done
+}
+
+CopyBundledFontNotices() {
+  local runtime_root="${STAGING}/aurora"
+  local font_notice_dir="${runtime_root}/share/doc/aurora-player/third-party/noto"
+  mkdir -p -- "${font_notice_dir}"
+  install -m 0644 -- "${PROJECT_ROOT}/third_party/noto/README.md" \
+    "${PROJECT_ROOT}/third_party/noto/SHA256SUMS.txt" \
+    "${font_notice_dir}/"
+  install -m 0644 -- "${PROJECT_ROOT}"/third_party/noto/LICENSES/* \
+    "${font_notice_dir}/"
 }
 
 CopyApkAnalyzerClasspath() {
@@ -1034,6 +1038,7 @@ Main() {
   STAGING="$(mktemp -d "${OUTPUT}.tmp.XXXXXX")"
   CopyRuntimeTree
   PackageStandaloneRuntime
+  CopyBundledFontNotices
   PackageAndroidRuntime
   CollectDependencies
   WriteDependencyManifest
