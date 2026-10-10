@@ -155,7 +155,8 @@ root_entries="$(find "${bundle}" -mindepth 1 -maxdepth 1 \
 runtime_entries="$(find "${runtime}" -mindepth 1 -maxdepth 1 \
   -printf '%f\n' | LC_ALL=C sort)"
 [[ "${runtime_entries}" == \
-   $'bin\nlib\nmetadata\nruntime\nscripts' ]]
+   $'bin\nfonts\nlib\nmetadata\nruntime\nscripts' ]]
+[[ -s "${runtime}/fonts/NotoSansThai-Regular.ttf" ]]
 [[ ! -e "${runtime}/tools" ]]
 [[ ! -e "${bundle}/README.txt" ]]
 ! find "${bundle}" -type d -name config -print -quit | grep -q .
@@ -402,7 +403,7 @@ standalone_root_entries="$(find "${standalone_bundle}" -mindepth 1 \
 standalone_runtime_entries="$(find "${standalone_runtime}" -mindepth 1 \
   -maxdepth 1 -printf '%f\n' | LC_ALL=C sort)"
 [[ "${standalone_runtime_entries}" == \
-   $'bin\nlib\nlibexec\nmetadata\nnamespace\nruntime\nscripts\nshare\nwebkit.env' ]]
+   $'bin\nfonts\nlib\nlibexec\nmetadata\nnamespace\nruntime\nscripts\nshare\nwebkit.env' ]]
 [[ ! -e "${standalone_runtime}/tools" ]]
 for path in runtime libexec share; do
   [[ -d "${standalone_runtime}/${path}" &&

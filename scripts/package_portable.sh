@@ -805,11 +805,11 @@ VerifyBundle() {
     -printf '%f\n' | LC_ALL=C sort)"
   if [[ "${MODE}" == standalone ]]; then
     [[ "${runtime_entries}" == \
-       $'bin\nlib\nlibexec\nmetadata\nnamespace\nruntime\nscripts\nshare\nwebkit.env' ]] ||
+       $'bin\nfonts\nlib\nlibexec\nmetadata\nnamespace\nruntime\nscripts\nshare\nwebkit.env' ]] ||
       Die "standalone runtime root has an unexpected public entry: ${runtime_entries//$'\n'/,}"
   else
     [[ "${runtime_entries}" == \
-       $'bin\nlib\nmetadata\nruntime\nscripts' ]] ||
+       $'bin\nfonts\nlib\nmetadata\nruntime\nscripts' ]] ||
       Die "thin runtime root has an unexpected public entry: ${runtime_entries//$'\n'/,}"
   fi
   while IFS= read -r -d '' elf; do
