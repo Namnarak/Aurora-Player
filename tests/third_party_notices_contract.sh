@@ -16,8 +16,8 @@ readonly assembly_exception="${source_root}/jni/ASSEMBLY_EXCEPTION"
   exit 1
 }
 notices+=("${assembly_exception}")
-[[ "${#notices[@]}" -eq 14 ]] || {
-  printf 'expected 13 third-party notice files plus ASSEMBLY_EXCEPTION, found %s total\n' "${#notices[@]}" >&2
+[[ "${#notices[@]}" -eq 16 ]] || {
+  printf 'expected 15 third-party notice files plus ASSEMBLY_EXCEPTION, found %s total\n' "${#notices[@]}" >&2
   exit 1
 }
 for notice in "${notices[@]}"; do
@@ -32,4 +32,4 @@ for notice in "${notices[@]}"; do
     exit 1
   }
 done
-printf '13 third-party license/notice files and JNI ASSEMBLY_EXCEPTION match byte for byte\n'
+printf '15 third-party license/notice files and JNI ASSEMBLY_EXCEPTION match byte for byte\n'

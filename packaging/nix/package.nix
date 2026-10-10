@@ -109,12 +109,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   fixupPhase = ''
     install -Dm644 ${finalAttrs.src}/LICENSE "$out/share/licenses/${finalAttrs.pname}/LICENSE"
+    install -Dm644 ${finalAttrs.src}/third_party/noto/LICENSES/Noto-Fonts-OFL-1.1.txt "$out/share/licenses/${finalAttrs.pname}/third-party/noto/Noto-Fonts-OFL-1.1.txt"
+    install -Dm644 ${finalAttrs.src}/third_party/noto/LICENSES/Noto-CJK-OFL-1.1.txt "$out/share/licenses/${finalAttrs.pname}/third-party/noto/Noto-CJK-OFL-1.1.txt"
   '';
 
   meta = with lib; {
     description = "Android x86-64 Roblox compatibility runtime for Linux";
     homepage = "https://github.com/Namnarak/Aurora-Player";
-    license = licenses.asl20;
+    license = with licenses; [ asl20 ofl ];
     platforms = platforms.unix;
     mainProgram = "aurora";
   };

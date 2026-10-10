@@ -9,7 +9,7 @@ fail() { printf 'Player product contract failed: %s\n' "$*" >&2; exit 1; }
 grep -Fq 'project(AuroraPlayer' "${ROOT}/CMakeLists.txt" || fail 'CMake project identity is wrong'
 grep -Fq 'set(AURORA_PACKAGE_NAME "aurora-player"' "${ROOT}/CMakeLists.txt" || fail 'stable package name is wrong'
 grep -Fq 'set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/Namnarak/Aurora-Player")' "${ROOT}/CMakeLists.txt" || fail 'CPack homepage is wrong'
-grep -Fq 'set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0 AND MIT AND BSD-2-Clause AND BSD-2-Clause-FreeBSD AND BSD-3-Clause AND BSD-4-Clause AND GPL-2.0-only WITH Classpath-exception-2.0")' "${ROOT}/CMakeLists.txt" || fail 'aggregate RPM license metadata is incomplete'
+grep -Fq 'set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0 AND MIT AND BSD-2-Clause AND BSD-2-Clause-FreeBSD AND BSD-3-Clause AND BSD-4-Clause AND GPL-2.0-only WITH Classpath-exception-2.0 AND OFL-1.1")' "${ROOT}/CMakeLists.txt" || fail 'aggregate RPM license metadata is incomplete'
 grep -Fq 'License: Apache-2.0.' "${ROOT}/CMakeLists.txt" || fail 'package description omits Apache license'
 grep -Fq '<project_license>Apache-2.0</project_license>' "${ROOT}/packaging/space.bigrat.aurora.metainfo.xml" || fail 'desktop metadata license is wrong'
 grep -Fq 'https://github.com/Namnarak/Aurora-Player' "${ROOT}/packaging/space.bigrat.aurora.metainfo.xml" || fail 'desktop metadata homepage is wrong'

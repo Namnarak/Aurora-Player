@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.20)
 project(AuroraPlayer
-  VERSION 1.0.0
+  VERSION 1.0.4
   DESCRIPTION "Aurora Player Android x86-64 Roblox runtime for Linux"
   LANGUAGES CXX
 )
@@ -688,6 +688,9 @@ add_executable(aurora_player src/player/aurora_player.cc)
 aurora_apply_compile_options(aurora_player)
 
 add_executable(aurora_mcp src/mcp/aurora_mcp.cc)
+target_compile_definitions(aurora_mcp PRIVATE
+  "AURORA_PROJECT_VERSION=\"${PROJECT_VERSION}\""
+)
 target_link_libraries(aurora_mcp PRIVATE
   Aurora::Runtime
   nlohmann_json::nlohmann_json
@@ -784,6 +787,10 @@ install(FILES
     config/roblox_signing_certificates.json
   DESTINATION "${AURORA_INSTALL_DATA_DIR}/metadata"
 )
+install(DIRECTORY third_party/noto/fonts
+  DESTINATION "${AURORA_INSTALL_DATA_DIR}"
+  FILES_MATCHING PATTERN "*.ttf" PATTERN "*.ttc"
+)
 install(FILES TERMS.md PRIVACY.md LICENSE LICENSES/PROVENANCE.md
   DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/aurora-player"
 )
@@ -875,7 +882,7 @@ set(CPACK_PACKAGE_VENDOR "Aurora Player Project")
 set(CPACK_PACKAGE_CONTACT "Namnarak")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/Namnarak/Aurora-Player")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
-set(CPACK_PACKAGE_DESCRIPTION "Runs the Android Roblox client on Linux.\n\nLicense: Apache-2.0.")
+set(CPACK_PACKAGE_DESCRIPTION "Runs the Android Roblox client on Linux.\n\nLicense: Apache-2.0. Bundled Noto fonts: SIL OFL 1.1.")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 set(CPACK_STRIP_FILES TRUE)
@@ -884,11 +891,11 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Namnarak")
 set(CPACK_DEBIAN_PACKAGE_SECTION "games")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Runs the Android Roblox client on Linux.\n\nLicense: Apache-2.0.")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Runs the Android Roblox client on Linux.\n\nLicense: Apache-2.0. Bundled Noto fonts: SIL OFL 1.1.")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
-set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0 AND MIT AND BSD-2-Clause AND BSD-2-Clause-FreeBSD AND BSD-3-Clause AND BSD-4-Clause AND GPL-2.0-only WITH Classpath-exception-2.0")
+set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0 AND MIT AND BSD-2-Clause AND BSD-2-Clause-FreeBSD AND BSD-3-Clause AND BSD-4-Clause AND GPL-2.0-only WITH Classpath-exception-2.0 AND OFL-1.1")
 set(CPACK_RPM_PACKAGE_GROUP "Amusements/Games")
 set(CPACK_RPM_PACKAGE_AUTOREQPROV ON)
 

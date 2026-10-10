@@ -1,12 +1,12 @@
 # Maintainer: Namnarak
 
 pkgname=aurora
-pkgver=1.0.0
-pkgrel=2
+pkgver=1.0.4
+pkgrel=1
 pkgdesc='Android x86-64 Roblox compatibility runtime for Linux'
 arch=('x86_64')
 url='https://github.com/Namnarak/Aurora-Player'
-license=('Apache-2.0')
+license=('Apache-2.0' 'OFL-1.1')
 depends=(
   'capstone'
   'curl'
@@ -62,4 +62,8 @@ package() {
   DESTDIR="${pkgdir}" cmake --install build
   install -Dm644 "${_aurora_source_dir}/LICENSE" \
     "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 "${_aurora_source_dir}/third_party/noto/LICENSES/Noto-Fonts-OFL-1.1.txt" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/third-party/noto/Noto-Fonts-OFL-1.1.txt"
+  install -Dm644 "${_aurora_source_dir}/third_party/noto/LICENSES/Noto-CJK-OFL-1.1.txt" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/third-party/noto/Noto-CJK-OFL-1.1.txt"
 }

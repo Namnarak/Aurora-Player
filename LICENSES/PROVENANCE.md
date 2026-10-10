@@ -21,10 +21,22 @@ The APKCombo provider was reviewed as first-party implementation: it uses
 Aurora's update interfaces and the C++ standard library, with no copied
 third-party implementation or license text. It is built only in Aurora Player.
 
+Aurora bundles script-aware fallback fonts under `third_party/noto/fonts/`:
+Regular faces from the Arch Linux `noto-fonts 1:2026.10.01-1` package and the
+Noto Sans CJK collection from `noto-fonts-cjk 20240730-1`. Their upstream
+projects are [Noto](https://github.com/notofonts/notofonts.github.io) and
+[Noto CJK](https://github.com/notofonts/noto-cjk). Noto fonts are distributed
+under the SIL Open Font License 1.1; the respective license texts are kept in
+`third_party/noto/LICENSES/`. `third_party/noto/SHA256SUMS.txt` records the
+hashes of every bundled font file. Aurora preserves the Roblox-selected font
+as the primary face and registers these bundled fonts as fallbacks for missing
+script glyphs.
+
 This publication snapshot intentionally has no Git history. The full local
 source hashes above refer to the pre-split checkout and are included as
 provenance evidence; they are not commits in this repository. Third-party
 components retain their own Apache-2.0, MIT, BSD-2-Clause, BSD-2-Clause-FreeBSD,
-BSD-3-Clause, BSD-4-Clause, and GPL-2.0-only with Classpath exception notices.
+BSD-3-Clause, BSD-4-Clause, SIL OFL 1.1, and GPL-2.0-only with Classpath
+exception notices.
 The package installs those notices and the JNI `ASSEMBLY_EXCEPTION` under
 `share/doc/aurora-player/third-party/`.

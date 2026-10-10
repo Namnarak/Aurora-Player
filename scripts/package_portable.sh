@@ -476,6 +476,15 @@ CopyRuntimeTree() {
     "${runtime_root}/runtime"
   chmod 0755 -- "${STAGING}"
 
+  cp -a -- "${PROJECT_ROOT}/third_party/noto/fonts" "${runtime_root}/fonts"
+  local font_notice_dir="${runtime_root}/share/doc/aurora-player/third-party/noto"
+  mkdir -p -- "${font_notice_dir}"
+  install -m 0644 -- "${PROJECT_ROOT}/third_party/noto/README.md" \
+    "${PROJECT_ROOT}/third_party/noto/SHA256SUMS.txt" \
+    "${font_notice_dir}/"
+  install -m 0644 -- "${PROJECT_ROOT}"/third_party/noto/LICENSES/* \
+    "${font_notice_dir}/"
+
   local artifact mode
   for artifact in "${PROJECT_ARTIFACTS[@]}"; do
     mode=0755

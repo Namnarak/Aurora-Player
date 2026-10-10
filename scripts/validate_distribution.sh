@@ -15,7 +15,7 @@ m=re.search(r'project\(AuroraPlayer\s+VERSION\s+(\d+(?:\.\d+)+)',src)
 assert m,'Missing version'
 manifest=Path('packaging/aur/aurora-bin/PKGBUILD').read_text()
 assert 'pkgver='+m.group(1) in Path('packaging/aur/aurora/PKGBUILD').read_text()
-# Prebuilt AUR checksum can be updated only after a 1.0.0 release asset exists.
+# Prebuilt AUR checksum can be updated only after its stable release asset exists.
 assert 'Namnarak/Aurora-Player' in manifest
 assert '.AppImage' in manifest and 'sha256sums' in manifest
 assert 'aurora.bigrat.space' not in Path('scripts/assemble_native_repositories.sh').read_text()

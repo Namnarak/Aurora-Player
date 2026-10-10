@@ -13,10 +13,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <limits>
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -28,7 +30,7 @@ namespace {
 
 constexpr std::size_t kMaximumRasterTextBytes = 4096;
 constexpr std::uint64_t kMaximumOverlayPixels = 16ULL * 1024ULL * 1024ULL;
-constexpr std::size_t kMaximumFallbackFonts = 6;
+constexpr std::size_t kMaximumFallbackFonts = 16;
 
 std::mutex g_active_overlay_mutex;
 RobloxTextSurfaceOverlay* g_active_overlay = nullptr;
@@ -114,7 +116,55 @@ SensitiveString VisibleTextWindow(
   return result;
 }
 
-void AppendFontSetFiles(FcFontSet* fonts, std::vector<std::string>* files) {
+struct FontFile {
+  std::string path;
+  int face_index = 0;
+};
+
+void RegisterBundledFonts() {
+  static std::once_flag registration_once;
+  std::call_once(registration_once, [] {
+    const char* project_root = std::getenv("AURORA_PROJECT_ROOT");
+    const char* bundled_font_directory =
+        std::getenv("AURORA_BUILTIN_FONT_DIR");
+    std::vector<std::filesystem::path> candidates;
+    candidates.reserve(3);
+    if (bundled_font_directory != nullptr &&
+        bundled_font_directory[0] != '\0') {
+      candidates.emplace_back(bundled_font_directory);
+    }
+    if (project_root != nullptr && project_root[0] != '\0') {
+      const std::filesystem::path root(project_root);
+      candidates.push_back(root / "fonts");
+      candidates.push_back(root / "share/aurora/fonts");
+    }
+    std::unordered_set<std::string> registered_directories;
+    FcConfig* config = FcConfigGetCurrent();
+    if (config == nullptr) {
+      return;
+    }
+    bool added_directory = false;
+    for (const std::filesystem::path& candidate : candidates) {
+      std::error_code error;
+      if (!std::filesystem::is_directory(candidate, error)) {
+        continue;
+      }
+      const std::string directory = candidate.lexically_normal().string();
+      if (!registered_directories.insert(directory).second) {
+        continue;
+      }
+      added_directory =
+          FcConfigAppFontAddDir(
+              config, reinterpret_cast<const FcChar8*>(directory.c_str())) ||
+          added_directory;
+    }
+    if (added_directory) {
+      (void)FcConfigBuildFonts(config);
+    }
+  });
+}
+
+void AppendFontSetFiles(FcFontSet* fonts, std::vector<FontFile>* files) {
   if (fonts == nullptr || files == nullptr) {
     return;
   }
@@ -126,9 +176,16 @@ void AppendFontSetFiles(FcFontSet* fonts, std::vector<std::string>* files) {
         file == nullptr || file[0] == '\0') {
       continue;
     }
-    const std::string candidate(reinterpret_cast<const char*>(file));
-    if (std::find(files->begin(), files->end(), candidate) == files->end()) {
-      files->push_back(candidate);
+    FontFile candidate{reinterpret_cast<const char*>(file), 0};
+    (void)FcPatternGetInteger(fonts->fonts[index], FC_INDEX, 0,
+                              &candidate.face_index);
+    const auto duplicate = std::find_if(
+        files->begin(), files->end(), [&candidate](const FontFile& existing) {
+          return existing.path == candidate.path &&
+                 existing.face_index == candidate.face_index;
+        });
+    if (duplicate == files->end()) {
+      files->push_back(std::move(candidate));
     }
   }
 }
@@ -143,18 +200,19 @@ FcFontSet* SortFontsForPattern(FcPattern* pattern) {
   return FcFontSort(nullptr, pattern, FcTrue, nullptr, &result);
 }
 
-std::vector<std::string> ResolveFontFiles(
+std::vector<FontFile> ResolveFontFiles(
     const RobloxTextFontSelection& selection, std::string_view text) {
-  std::vector<std::string> files;
+  std::vector<FontFile> files;
   const char* configured = std::getenv("AURORA_TEXT_FONT");
   if (configured != nullptr && configured[0] != '\0') {
-    files.emplace_back(configured);
+    files.push_back({configured, 0});
   } else if (!selection.primary_file.empty()) {
-    files.push_back(selection.primary_file);
+    files.push_back({selection.primary_file, 0});
   }
   if (!FcInit()) {
     return files;
   }
+  RegisterBundledFonts();
 
   // Ask fontconfig for fonts that cover the actual text before filling the
   // remaining slots with generic sans fallbacks. Roblox's bundled fonts cover
@@ -211,6 +269,26 @@ std::vector<std::string> ResolveFontFiles(
     }
   }
   return files;
+}
+
+TTF_Font* OpenFontFile(const FontFile& file, float point_size) {
+  if (file.face_index == 0) {
+    return TTF_OpenFont(file.path.c_str(), point_size);
+  }
+  const SDL_PropertiesID properties = SDL_CreateProperties();
+  if (properties == 0) {
+    return nullptr;
+  }
+  const bool configured =
+      SDL_SetStringProperty(properties, TTF_PROP_FONT_CREATE_FILENAME_STRING,
+                            file.path.c_str()) &&
+      SDL_SetFloatProperty(properties, TTF_PROP_FONT_CREATE_SIZE_FLOAT,
+                           point_size) &&
+      SDL_SetNumberProperty(properties, TTF_PROP_FONT_CREATE_FACE_NUMBER,
+                            file.face_index);
+  TTF_Font* font = configured ? TTF_OpenFontWithProperties(properties) : nullptr;
+  SDL_DestroyProperties(properties);
+  return font;
 }
 
 void SetPixel(std::vector<std::uint8_t>* pixels, int width, int x, int y,
@@ -555,12 +633,12 @@ Status RobloxTextSurfaceOverlay::RasterizeLocked() {
   std::size_t selection_end_byte = 0;
   SensitiveString text = VisibleTextWindow(
       presentation, &caret_byte, &selection_begin_byte, &selection_end_byte);
-  const std::vector<std::string> font_files =
+  const std::vector<FontFile> font_files =
       ResolveFontFiles(font_selection, text.value);
   std::vector<TTF_Font*> fonts;
   fonts.reserve(font_files.size());
-  for (const std::string& file : font_files) {
-    TTF_Font* font = TTF_OpenFont(file.c_str(), point_size);
+  for (const FontFile& file : font_files) {
+    TTF_Font* font = OpenFontFile(file, point_size);
     if (font != nullptr) {
       fonts.push_back(font);
     }

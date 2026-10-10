@@ -517,6 +517,7 @@ if [[ "${information_only}" == false && -z "${ROBLOX_LIB_PATH:-}" &&
 fi
 
 export AURORA_PROJECT_ROOT="${RUNTIME_ROOT}"
+export AURORA_BUILTIN_FONT_DIR="${RUNTIME_ROOT}/fonts"
 export AURORA_COMPATIBILITY_MANIFEST="${METADATA_DIR}/roblox_compatibility.json"
 export AURORA_UPDATE_COMPATIBILITY_PATH="${METADATA_DIR}/roblox_compatibility.json"
 export AURORA_UPDATE_SIGNING_TRUST_PATH="${METADATA_DIR}/roblox_signing_certificates.json"

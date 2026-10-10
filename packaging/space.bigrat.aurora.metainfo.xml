@@ -55,6 +55,14 @@
     <binary>aurora</binary>
   </provides>
   <releases>
+    <release version="1.0.4" date="2026-10-10">
+      <description>
+        <ul>
+          <li>Bundle multilingual Noto fonts so Roblox text renders across more writing systems, including Thai.</li>
+          <li>Use script-aware font fallback while preserving Roblox's selected font.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-10-09">
       <description>
         <ul>

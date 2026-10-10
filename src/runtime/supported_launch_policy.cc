@@ -72,6 +72,7 @@ bool ApplyInstalledResourceDefaults(std::string* error) {
 
   const std::vector<std::pair<const char*, std::filesystem::path>> defaults = {
       {"AURORA_PROJECT_ROOT", data_directory},
+      {"AURORA_BUILTIN_FONT_DIR", data_directory / "fonts"},
       {"AURORA_COMPATIBILITY_MANIFEST",
        metadata_directory / "roblox_compatibility.json"},
       {"AURORA_UPDATE_COMPATIBILITY_PATH",
