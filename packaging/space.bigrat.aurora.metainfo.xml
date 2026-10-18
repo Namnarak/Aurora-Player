@@ -55,6 +55,15 @@
     <binary>aurora</binary>
   </provides>
   <releases>
+    <release version="1.0.5" date="2026-10-18">
+      <description>
+        <ul>
+          <li>Restore Roblox voice chat microphone capture for Roblox 2.742 (x86_64).</li>
+          <li>Select the verified native FMOD capture path per Roblox Build ID, using the WebRTC JNI path as a fallback for unsupported builds.</li>
+          <li>Add regression coverage for native microphone PCM delivery.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.4" date="2026-10-10">
       <description>
         <ul>
