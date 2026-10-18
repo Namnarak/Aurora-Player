@@ -3,10 +3,15 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <atomic>
+#include <chrono>
+#include <thread>
 #include <cstdint>
 #include <string>
 
 #include "audio/roblox_output_device_bridge_internal.h"
+#include "audio/native_input_capture.h"
+#include "aurora/audio/sdl_audio_sink.h"
 #include "compat/fmod_output_device_contract.h"
 
 namespace aurora::audio {
@@ -62,6 +67,7 @@ TEST(RobloxOutputDeviceBridgeTest, SelectsNativeCaptureForExactSupportedBuild) {
 
   const auto capture = internal::FindNativeInputCaptureProfile(profile);
   ASSERT_TRUE(capture.has_value());
+  EXPECT_TRUE(HasVerifiedNativeInputCaptureProfile(profile));
   EXPECT_EQ(capture->capture_method_rvas,
             (std::array<std::uintptr_t, 6>{0x32536d2, 0x3252d98, 0x3254556,
                                            0x3254bde, 0x3252aa0, 0x3254eb4}));
@@ -69,11 +75,84 @@ TEST(RobloxOutputDeviceBridgeTest, SelectsNativeCaptureForExactSupportedBuild) {
   EXPECT_EQ(capture->deliver_pcm_rva, 0x3259cc0);
   EXPECT_EQ(capture->sink_destroy_rva, 0x1e24f60);
 
-  profile.elf_build_id = "0000000000000000000000000000000000000000";
+  profile.elf_build_id = "a67a91ef96c700c0730acd36a250c2f93cfafbc1";
+  EXPECT_FALSE(HasVerifiedNativeInputCaptureProfile(profile));
   EXPECT_FALSE(internal::FindNativeInputCaptureProfile(profile).has_value());
   profile.elf_build_id = "913ea9839b6084470a25e4be8feddc88214a26a3";
   profile.fmod_output_device_bridge->vtable_rva++;
   EXPECT_FALSE(internal::FindNativeInputCaptureProfile(profile).has_value());
+}
+
+TEST(RobloxOutputDeviceBridgeTest, CurrentRoblox742HasVerifiedCaptureProfile) {
+  compat::BuildProfile profile;
+  profile.elf_build_id = "a67a91ef96c700c0730acd36a250c2f93cfafbc1";
+  profile.fmod_output_device_bridge = compat::FmodOutputDeviceBridgeProfile{
+      0x6e3d1d0, 0x1e1c0b4, 0x2ee4890, 0x2ee4930,
+      0x2ee48e0, 0x2ee4192, 2};
+  profile.fmod_output_device_bridge->input_method_rvas =
+      {0x2ee4f10, 0x2ee4f1e, 0x2ee536c, 0x2ee3f32};
+  ASSERT_TRUE(HasVerifiedNativeInputCaptureProfile(profile));
+  const auto native = internal::FindNativeInputCaptureProfile(profile);
+  ASSERT_TRUE(native.has_value());
+  EXPECT_EQ(native->capture_method_rvas,
+            (std::array<std::uintptr_t, 6>{0x2ee484a, 0x2ee3f10,
+                0x2ee56ce, 0x2ee5d56, 0x2ee3c18, 0x2ee602c}));
+  EXPECT_EQ(native->sink_vtable_rva, 0x6e3daa0);
+  EXPECT_EQ(native->deliver_pcm_rva, 0x2eec052);
+  EXPECT_EQ(native->sink_destroy_rva, 0x1e60850);
+  profile.fmod_output_device_bridge->input_method_rvas[0]++;
+  EXPECT_FALSE(HasVerifiedNativeInputCaptureProfile(profile));
+}
+
+TEST(RobloxOutputDeviceBridgeTest, NativeCaptureDeliversPcmToGuestSink) {
+  struct FakeSink {
+    std::uintptr_t* vtable;
+    std::atomic<int> delivered{0};
+    std::atomic<int> last_frames{0};
+  };
+  std::array<std::uintptr_t, 3> sink_vtable{};
+  sink_vtable[2] = reinterpret_cast<std::uintptr_t>(
+      +[](void* opaque, const void* pcm, std::size_t frames, std::uint64_t,
+          const NativePcmFormat* format) -> std::size_t {
+        auto* sink = static_cast<FakeSink*>(opaque);
+        if (pcm && format && format->rate == 48000 &&
+            format->channels == 1 && format->bytes_per_sample == 2) {
+          sink->last_frames.store(static_cast<int>(frames));
+          sink->delivered.fetch_add(1);
+        }
+        return frames;
+      });
+  NativeInputCapture::SinkAbi abi{
+      reinterpret_cast<std::uintptr_t>(sink_vtable.data()),
+      reinterpret_cast<NativeInputCapture::DeliverPcm>(sink_vtable[2]),
+      +[](NativeSharedSink* sink) { *sink = {}; },
+      +[](void*, std::uint32_t* playback, std::uint32_t* recording) {
+        if (playback) *playback = 10;
+        if (recording) *recording = 10;
+      }};
+  ASSERT_TRUE(InitializeSdlAudioSubsystem().ok());
+  {
+    NativeInputCapture capture(abi, true);
+    g_native_capture.store(&capture);
+    FakeSink fake_sink{sink_vtable.data()};
+    NativeSharedSink sink{&fake_sink, &fake_sink};
+    int owner = 7;
+    ASSERT_TRUE(NativeInputCapture::Format(&owner).present);
+    ASSERT_TRUE(NativeInputCapture::Start(&owner, &sink));
+    EXPECT_EQ(sink.object, nullptr);
+    ASSERT_TRUE(NativeInputCapture::Recording(&owner));
+    for (int attempt = 0; attempt < 80 && !fake_sink.delivered.load(); ++attempt) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      NativeInputCapture::Poll(&owner);
+    }
+    EXPECT_GT(fake_sink.delivered.load(), 0);
+    EXPECT_EQ(fake_sink.last_frames.load(), 480);
+    NativeSharedSink stopped{&fake_sink, &fake_sink};
+    NativeInputCapture::Stop(&owner, &stopped);
+    EXPECT_FALSE(NativeInputCapture::Recording(&owner));
+    g_native_capture.store(nullptr);
+  }
+  EXPECT_TRUE(ShutdownSdlAudioSubsystem().ok());
 }
 
 TEST(RobloxOutputDeviceBridgeTest, ValidatesEveryInterposedVtableSlot) {

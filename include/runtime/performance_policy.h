@@ -66,6 +66,7 @@ bool MergeRuntimeClientSettingsOverrides(const FrameRatePolicy& frame_rate,
 // answers microphone authorization from capture configuration. No permission
 // query opens a recording device.
 bool MergeAudioDeviceMenuClientSettingsOverrides(std::string_view base_json,
+                                                 bool native_capture_supported,
                                                  std::string *merged_json,
                                                  std::string *error);
 

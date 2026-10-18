@@ -824,9 +824,25 @@ int main(int argc, char* argv[]) {
     }
     std::cout << "  [runtime] HttpClient compatibility mode enabled: "
                  "generic LuaApp retry and RuntimeMutexRv disabled\n";
+    // The FMOD recording hook is valid only for its exact, verified build.
+    // New Roblox payloads use the JNI WebRTC AudioRecord fallback.
+    const auto audio_profile = aurora::compat::CheckPayloadCompatibility(
+        runtime_config.config.roblox_library_path().string(),
+        environment.GetOr("AURORA_COMPATIBILITY_MANIFEST",
+                          AURORA_DEFAULT_COMPATIBILITY_MANIFEST),
+        command_line.options.allow_unverified_build);
+    const bool native_capture_supported =
+        audio_profile && aurora::audio::HasVerifiedNativeInputCaptureProfile(
+                             audio_profile.profile);
+    std::cout << "  [runtime] microphone backend="
+              << (native_capture_supported ? "native-fmod" : "webrtc-jni")
+              << " (exact native ABI "
+              << (native_capture_supported ? "verified" : "unavailable")
+              << ")\n";
     std::string audio_device_overrides;
     if (!aurora::runtime::MergeAudioDeviceMenuClientSettingsOverrides(
-            audio_capture_overrides, &audio_device_overrides,
+            audio_capture_overrides, native_capture_supported,
+            &audio_device_overrides,
             &command_line_error)) {
       std::cerr << "[FATAL] Cannot apply audio device policy: "
                 << command_line_error << '\n';
@@ -861,8 +877,7 @@ int main(int argc, char* argv[]) {
       std::cerr << "[FATAL] Cannot export crash-report fast-flags policy\n";
       return EXIT_FAILURE;
     }
-    std::cout << "  [runtime] native FMOD microphone capture selected; remote audio "
-                 "device sync disabled\n";
+    std::cout << "  [runtime] remote audio device sync disabled\n";
     std::cout << "  [runtime] forwarded " << forwarded_client_fast_flags
               << " client-settings FastFlags into native preload payload\n";
     std::cout << "  [runtime] Roblox crash-report uploads disabled by "

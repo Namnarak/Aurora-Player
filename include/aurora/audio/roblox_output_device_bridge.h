@@ -16,6 +16,9 @@ namespace aurora::audio {
 
 class NativeInputCapture;
 
+// True only for an exact Roblox build with a verified native recording ABI.
+bool HasVerifiedNativeInputCaptureProfile(const compat::BuildProfile& profile);
+
 // Replaces the profiled input/output-device query/select slots of the exact
 // Build-ID-scoped FmodAudioDevice vtable. Roblox keeps owning its FMOD engine,
 // while the existing settings UI sees and selects the SDL host routes that

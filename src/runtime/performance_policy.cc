@@ -353,6 +353,7 @@ bool MergeRuntimeClientSettingsOverrides(const FrameRatePolicy& frame_rate,
 }
 
 bool MergeAudioDeviceMenuClientSettingsOverrides(std::string_view base_json,
+                                                 bool native_capture_supported,
                                                  std::string *merged_json,
                                                  std::string *error) {
   if (merged_json == nullptr)
@@ -364,9 +365,10 @@ bool MergeAudioDeviceMenuClientSettingsOverrides(std::string_view base_json,
       *error = "audio device menu overrides must be a JSON object";
     return false;
   }
-  // This build's host microphone bridge patches the native FMOD capture ABI.
-  // Select that implementation; remote device-list synchronization is unbridged.
-  overrides["FFlagDebugUseWebRtcAudioDevices"] = "False";
+  // Do not select native FMOD recording without a verified exact-build ABI.
+  // The supported WebRTC AudioRecord JNI bridge is the safe fallback.
+  overrides["FFlagDebugUseWebRtcAudioDevices"] =
+      native_capture_supported ? "False" : "True";
   overrides["FFlagRemoteAudioDeviceSync"] = "False";
   *merged_json = overrides.dump();
   return true;

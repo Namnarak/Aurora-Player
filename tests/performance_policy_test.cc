@@ -271,14 +271,24 @@ TEST(PerformancePolicyTest, HostAudioMenuUsesBridgedDeviceQueries) {
   std::string error;
   ASSERT_TRUE(MergeAudioDeviceMenuClientSettingsOverrides(
       R"({"FFlagDebugUseWebRtcAudioDevices":"True","FFlagRemoteAudioDeviceSync":"True","unrelated":123})",
-      &merged, &error));
+      true, &merged, &error));
   const auto parsed = nlohmann::json::parse(merged);
   EXPECT_EQ(parsed.at("FFlagDebugUseWebRtcAudioDevices"), "False");
   EXPECT_EQ(parsed.at("FFlagRemoteAudioDeviceSync"), "False");
   EXPECT_EQ(parsed.at("unrelated"), 123);
   EXPECT_FALSE(parsed.contains("DFFlagVoiceChatSkipPermissionCheckForTests"));
   EXPECT_FALSE(
-      MergeAudioDeviceMenuClientSettingsOverrides("[]", &merged, &error));
+      MergeAudioDeviceMenuClientSettingsOverrides("[]", true, &merged, &error));
+}
+
+TEST(PerformancePolicyTest, UnknownNativeAudioProfileUsesWebRtc) {
+  std::string merged, error;
+  ASSERT_TRUE(MergeAudioDeviceMenuClientSettingsOverrides(
+      R"({"FFlagDebugUseWebRtcAudioDevices":"False"})", false,
+      &merged, &error));
+  const auto parsed = nlohmann::json::parse(merged);
+  EXPECT_EQ(parsed.at("FFlagDebugUseWebRtcAudioDevices"), "True");
+  EXPECT_EQ(parsed.at("FFlagRemoteAudioDeviceSync"), "False");
 }
 
 TEST(PerformancePolicyTest, PermissionProtocolDoesNotUseTheTestBypass) {

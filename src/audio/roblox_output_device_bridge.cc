@@ -190,6 +190,23 @@ std::optional<FmodNativeInputCaptureProfile> FindNativeInputCaptureProfile(
     };
   }
 
+  // Roblox 2.742.0.1059, Build-ID-scoped x86-64 capture ABI.
+  // Verified against the 2.742 ELF RELATIVE relocations for FmodAudioDevice
+  // slots 4 and 13..17 and PCM sink slot 2. The sink destroy byte contract
+  // matches the previously verified 2.741 implementation.
+  if (profile.elf_build_id == "a67a91ef96c700c0730acd36a250c2f93cfafbc1" &&
+      matches_bridge(0x6e3d1d0, 0x1e1c0b4, 0x2ee4890, 0x2ee4930,
+                     0x2ee48e0, 0x2ee4192,
+                     {0x2ee4f10, 0x2ee4f1e, 0x2ee536c, 0x2ee3f32})) {
+    return FmodNativeInputCaptureProfile{
+        {0x2ee484a, 0x2ee3f10, 0x2ee56ce, 0x2ee5d56, 0x2ee3c18,
+         0x2ee602c},
+        0x6e3daa0,
+        0x2eec052,
+        0x1e60850,
+    };
+  }
+
   return std::nullopt;
 }
 
@@ -269,6 +286,10 @@ std::string MakeOutputDeviceGuid(std::uint32_t playback_device_id,
 }
 
 }  // namespace internal
+
+bool HasVerifiedNativeInputCaptureProfile(const compat::BuildProfile& profile) {
+  return internal::FindNativeInputCaptureProfile(profile).has_value();
+}
 
 RobloxOutputDeviceBridge::~RobloxOutputDeviceBridge() { Shutdown(); }
 
