@@ -91,6 +91,24 @@ std::optional<FontMapping> MappingFor(
              : std::optional<FontMapping>(mapped->second);
 }
 
+// Roblox Enum.Font values for the Builder Sans family. These files are read
+// from the active Roblox content directory; Aurora does not bundle or install
+// Builder font binaries.
+const char* BuilderSansFileName(int32_t font) {
+  switch (font) {
+    case 46:
+      return "BuilderSans-Regular.otf";
+    case 47:
+      return "BuilderSans-Medium.otf";
+    case 48:
+      return "BuilderSans-Bold.otf";
+    case 49:
+      return "BuilderSans-ExtraBold.otf";
+    default:
+      return nullptr;
+  }
+}
+
 std::string LegacyFontName(int32_t font) {
   if (font == 4) {
     return "SourceSansPro-Bold.ttf";
@@ -120,6 +138,20 @@ RobloxTextFontSelection ResolveRobloxTextFont(
       selection.exact_mapping = true;
       return selection;
     }
+  }
+
+  // Prefer the corresponding Roblox Builder Sans weight when the Android
+  // enum mapping is absent or does not point to an available asset. Do not
+  // silently substitute Source Sans for Builder Sans: if the Roblox payload
+  // does not contain the Builder face, the overlay's script-aware fallback
+  // chain will choose a locally available font instead.
+  if (const char* builder_file = BuilderSansFileName(font)) {
+    const std::filesystem::path candidate =
+        content / "fonts" / builder_file;
+    if (IsRegularFile(candidate)) {
+      selection.primary_file = candidate.lexically_normal().string();
+    }
+    return selection;
   }
 
   const std::filesystem::path legacy =
