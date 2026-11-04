@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <utility>
 
 namespace aurora {
 namespace runtime {
@@ -78,6 +79,67 @@ TEST(RobloxTextFontResolverTest, MatchesLegacyRbxKeyboardFallbacks) {
   EXPECT_EQ(selection.primary_file,
             (assets.root() / "assets/fonts/SourceSansPro-Bold.ttf").string());
   EXPECT_FLOAT_EQ(selection.size_scale, 0.795F);
+}
+
+TEST(RobloxTextFontResolverTest, UsesBuilderSansWeightFromRobloxContent) {
+  TemporaryFontAssets assets;
+  ASSERT_FALSE(assets.root().empty());
+
+  const std::pair<int32_t, const char*> builder_fonts[] = {
+      {46, "BuilderSans-Regular.otf"},
+      {47, "BuilderSans-Medium.otf"},
+      {48, "BuilderSans-Bold.otf"},
+      {49, "BuilderSans-ExtraBold.otf"},
+  };
+
+  for (const auto& [font, filename] : builder_fonts) {
+    const std::filesystem::path relative =
+        std::filesystem::path("assets/content/fonts") / filename;
+    ASSERT_TRUE(assets.CreateFile(relative)) << filename;
+
+    const RobloxTextFontSelection selection =
+        ResolveRobloxTextFont(font, assets.content().string());
+
+    EXPECT_FALSE(selection.exact_mapping) << filename;
+    EXPECT_EQ(selection.primary_file,
+              (assets.content() / "fonts" / filename).string());
+    EXPECT_FLOAT_EQ(selection.size_scale, 0.795F);
+  }
+}
+
+TEST(RobloxTextFontResolverTest,
+     UsesExactAndroidMappingBeforeBuilderSansFilenameFallback) {
+  TemporaryFontAssets assets;
+  ASSERT_FALSE(assets.root().empty());
+  ASSERT_TRUE(assets.CreateFile(
+      "assets/android/fonts/font-mappings.json",
+      R"([{"enum":46,"font":"BuilderSans-Regular-Android.ttf","fromRbxFontRatio":0.91}])"));
+  ASSERT_TRUE(assets.CreateFile(
+      "assets/content/fonts/BuilderSans-Regular-Android.ttf"));
+  ASSERT_TRUE(
+      assets.CreateFile("assets/content/fonts/BuilderSans-Regular.otf"));
+
+  const RobloxTextFontSelection selection =
+      ResolveRobloxTextFont(46, assets.content().string());
+
+  EXPECT_TRUE(selection.exact_mapping);
+  EXPECT_EQ(selection.primary_file,
+            (assets.content() / "fonts/BuilderSans-Regular-Android.ttf")
+                .string());
+  EXPECT_FLOAT_EQ(selection.size_scale, 0.91F);
+}
+
+TEST(RobloxTextFontResolverTest,
+     DoesNotSubstituteLegacySourceSansForMissingBuilderFont) {
+  TemporaryFontAssets assets;
+  ASSERT_FALSE(assets.root().empty());
+  ASSERT_TRUE(assets.CreateFile("assets/fonts/SourceSansPro-Regular.ttf"));
+
+  const RobloxTextFontSelection selection =
+      ResolveRobloxTextFont(46, assets.content().string());
+
+  EXPECT_FALSE(selection.exact_mapping);
+  EXPECT_TRUE(selection.primary_file.empty());
 }
 
 TEST(RobloxTextFontResolverTest, RejectsMappingPathTraversal) {
