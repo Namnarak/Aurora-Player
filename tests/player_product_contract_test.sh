@@ -25,9 +25,10 @@ grep -Fq 'src/update/apkcombo_provider.cc' "${ROOT}/CMakeLists.txt" || fail 'Pla
 grep -Fq 'AURORA_ENABLE_APKCOMBO_PROVIDER=1' "${ROOT}/CMakeLists.txt" || fail 'Player APKCombo provider is not enabled'
 grep -Fq 'SPDX-License-Identifier: Apache-2.0' "${ROOT}/src/update/apkcombo_provider.cc" || fail 'APKCombo provider license attribution is missing'
 grep -Fq 'NamKrub-authored local worktree additions' "${ROOT}/LICENSES/PROVENANCE.md" || fail 'local provider provenance is missing'
-# Only documented Player distribution workflows may be in the public repo.
+# Only documented Player distribution and repository-maintenance workflows may be in the public repo.
 if find "${ROOT}/.github/workflows" -maxdepth 1 -type f \
     ! -name ci.yml ! -name distribution.yml ! -name aur-check.yml \
+    ! -name star-history.yml \
     -print -quit | grep -q .; then
   fail 'unknown workflow remains in the publication candidate'
 fi
