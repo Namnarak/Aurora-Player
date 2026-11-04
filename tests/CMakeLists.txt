@@ -354,6 +354,14 @@ target_link_libraries(roblox_capability_resolver_test PRIVATE
   GTest::gtest_main
 )
 
+add_executable(roblox_text_font_resolver_test
+  roblox_text_font_resolver_test.cc
+)
+target_link_libraries(roblox_text_font_resolver_test PRIVATE
+  Aurora::Runtime
+  GTest::gtest_main
+)
+
 add_executable(roblox_app_lifecycle_test
   roblox_app_lifecycle_test.cc
 )
@@ -981,6 +989,7 @@ gtest_discover_tests(startup_state_machine_test)
 gtest_discover_tests(game_session_coordinator_test)
 gtest_discover_tests(owned_pthread_test)
 gtest_discover_tests(roblox_capability_resolver_test)
+gtest_discover_tests(roblox_text_font_resolver_test)
 gtest_discover_tests(roblox_app_lifecycle_test)
 gtest_discover_tests(roblox_game_session_native_adapter_test)
 gtest_discover_tests(roblox_experience_launch_bridge_test)
